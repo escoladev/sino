@@ -1,32 +1,14 @@
+import os
 import sys
 import time
-from datetime import datetime
+import random
 import configparser
-from pathlib import Path
+# audios libs
 import pydub
 import pydub.playback as playback
 
-def unidades_por_plataforma():
-    if sys.platform == 'linux':
-        #p = Path('/media/constantino-radio/')
-        print('unidades_por_plataforma: ', self._diretorio_usb_linux)
-        p = Path(self._diretorio_usb_linux)
-        return [str(i) for i in p.iterdir() if i.is_dir()] if p.exists() else []
-    # se for windows...
-    return ['D:/musicas/', 'E:/musicas/', 'F:/musicas/', 'G:/musicas/']
-
-
-
-class Cfg:
-    def __init__(self):
-        self.sino_ou_musica = None
-        self.sino_padrao = None 
-        self.pasta_padrao = None 
-        self.tempo_musica = None
-
-
-cfg = Cfg()
-
+from pathlib import Path
+from datetime import datetime
 
 def dia_hoje():
 
@@ -40,10 +22,6 @@ def dia_hoje():
         'Friday': 'sexta'
     }
     return dias[dia] if dia in dias else 'sexta'
-
-
-def gerar_ini():
-    pass
 
 
 def comparar_data(data_str, data_obj):
@@ -61,77 +39,112 @@ def comparar_data(data_str, data_obj):
     return -1
 
 
-def ler_ini():
-    
-    global cfg
+class Pysino:
 
-    try:
-        config = configparser.ConfigParser()
-        # colocar direitorio aqui via código
-        config.read('/home/jhoonb/proj/pysino/horarios.ini')
-    except:
-        gerar_ini()
-    
-    cfg.pasta_padrao = config['configuracao']['pastaPadrao']
-    cfg.sino_padrao = config['configuracao']['sinoPadrao']
-    cfg.tempo_musica = config['configuracao']['tempoMusica']
+    def __init__(self):
+        
+        _config = configparser.ConfigParser()
+        _p = os.getcwd()
+        _arq = Path(_p)
+        _arq = _arq / 'horarios.ini'
 
-    return config
+        _config.read(str(_arq))
+        _dia = dia_hoje()
+
+        _hr_musica = _config[_dia]['horarioMusica'].strip().split(",")
+        _hr_sino = _config[_dia]['horarioSinoPadrao'].strip().split(",")
+
+        self.hr_musica = [i.replace(" ", "") for i in _hr_musica]
+        self.hr_sino = [i.replace(" ", "") for i in _hr_sino]
+        self.sino_ou_musica = None
+        self.sino_padrao = _config['configuracao']['sinoPadrao'] 
+        self.pasta_padrao = _config['configuracao']['pastaPadrao'] 
+        self.tempo_musica = int(_config['configuracao']['tempoMusica'])
+        self.dia = _dia
 
 
-def tocar():
-    global cfg
-    c = '/home/jhoonb/'
-    arquivo = 'sino_padrao.mp3' if cfg.sino_ou_musica == 'sino' else "errare.mp3"
-    musica = pydub.AudioSegment.from_file(c+arquivo, format="mp3")
-    tempo = cfg.tempo_musica * 1000
-    playback.play(musica[:tempo])
+    def tocar(self):
+        arquivo_musica = ''
+        if self.sino_ou_musica == 'sino':
+            arquivo_musica = self.sino_padrao
+        else:
+            arquivo_musica = self.escolher_musica()
+
+        musica = pydub.AudioSegment.from_file(arquivo_musica, format="mp3")
+        tempo = int(self.tempo_musica) * 1000
+        # aplica corta na música e faz fade in/out 
+        musica = musica[:tempo]
+        musica = musica.fade_in(5000)
+        musica = musica.fade_out(5000)
+        print("Música escolhida: ", arquivo_musica)
+        playback.play(musica)
+
+
+    def executar(self):
+        hora_agora = datetime.now()
+        print("""
+        -----------------------------------------------------
+                            Pysino 
+
+                             {} 
+        ----------------Configurações------------------------
+        Hoje é: {}
+        Tempo de execução da Música: {} seg(s).
+        Diretório das Músicas: {}
+        Sino Padrão: {}
+        -----------------------------------------------------
+        """.format(hora_agora.year,
+        self.dia,
+        self.tempo_musica,
+        self.pasta_padrao,
+        self.sino_padrao))
+
+        while self.hr_musica:
+            hora_agora = datetime.now()
+            hora = 'Horário: {}:{}    --> [Próximo Sino: {}]'.format(
+                hora_agora.hour, 
+                hora_agora.minute,
+                self.hr_musica[0])
+
+            print(hora, end='\r')
+
+            comp = comparar_data(self.hr_musica[0], hora_agora)
+            if self.hr_musica[0] in self.hr_sino:
+                self.sino_ou_musica = 'sino'
+            else:
+                self.sino_ou_musica = 'musica'
+
+            if comp == 0:
+                self.tocar()
+                self.hr_musica.remove(self.hr_musica[0])
+            elif comp == -1: #remove porque é horário passado
+                self.hr_musica.remove(self.hr_musica[0])
+                time.sleep(2)
+                continue
+            else: # comp == 1:
+                pass # ainda nao foi, espera...
+            time.sleep(5)
+
+
+    def escolher_musica(self):
+
+        def is_mp3(i):
+            if i.is_file() and str(i).split(".")[-1] == "mp3":
+                return True
+            return False
+
+        p = Path(self.pasta_padrao)
+        
+        musicas = [i for i in p.iterdir() if is_mp3(i)]
+        return random.choice(musicas)
 
 
 if __name__ == '__main__':
-    
-    config_file = ler_ini()
-    dia = dia_hoje()
 
-    hr_musica = config_file[dia]['horarioMusica'].strip().split(",")
-    hr_sino = config_file[dia]['horarioSinoPadrao'].strip().split(",")
-    hr_musica = [i.replace(" ", "") for i in hr_musica]
-    hr_sino = [i.replace(" ", "") for i in hr_sino]
-
+    pysino = Pysino()
+    pysino.executar()
     print("""
-    -----------------------------------------------------
-                        Pysino 
-
-                        2019 
-    ----------------Configurações------------------------
-    Hoje é: {}
-    Tempo de execução da Música: {} seg(s).
-    Diretório das Músicas: {}
-    Sino Padrão: {}
-    -----------------------------------------------------
-    """.format(dia,
-    cfg.tempo_musica,
-    cfg.pasta_padrao,
-    cfg.sino_padrao))
-
-    while hr_musica:
-       
-        hora_agora = datetime.now()
-        _hora = 'Horário: {}:{}'.format(hora_agora.hour, hora_agora.minute)
-
-        print(_hora, end='\r')
-
-        comp = comparar_data(hr_musica[0], hora_agora)
-        cfg.sino_ou_musica = 'sino' if hr_musica[0] in hr_sino else 'musica'
-
-        if comp == 0:
-            tocar()
-            hr_musica.remove(hr_musica[0])
-        elif comp == -1:
-            hr_musica.remove(hr_musica[0])
-        else: # comp == 1:
-            pass # ainda nao foi, espera...
-        time.sleep(5)
-
-# fim
-print("\ttodos os sinos agendados tocados!")
+        -----------------------------------------------------
+                         Concluído!
+        -----------------------------------------------------
+    """)

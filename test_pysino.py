@@ -43,8 +43,5 @@ class TestPysino(unittest.TestCase):
         resultado = dias['macaco'] if 'macaco' in dias else 'sexta'
         self.assertEqual(resultado, 'sexta')
 
-
-
-  
 if __name__ == '__main__':
     unittest.main()

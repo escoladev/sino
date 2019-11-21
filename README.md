@@ -31,8 +31,34 @@ horarioSinoPadrao = os horários formato(hora:minuto) que tocará sino, separado
 
 ## dependência
 
-Esse programa requer a biblioteca: [pydub](https://github.com/jiaaro/pydub) instalada e as libs para se usar o playback (veja na página do github da lib).
-Observação: formato de aúdio, apenas **.mp3**
+Esse programa requer a biblioteca: [pydub](https://github.com/jiaaro/pydub) instalada e as libs para se usar o playback (veja na página do github da lib). 
+Observação: formato de aúdio, apenas **.mp3** (para o pysino).
+
+Instalar as seguintes bibliotecas: 
+
+- Pydub: ```pip install pydub```
+
+- [ffmpeg (versão pra Windows/Linux/MacOs)](http://www.ffmpeg.org/)
+
+- [Libav](https://libav.org/)
+
+- Simpleaudio: ``` pip install simpleaudio``` 
+
+- Pyaudio: ``` pip install pyaudio ``` 
+
+
+Para testar se está funcionando, execute no python:
+
+
+```python 
+from pydub import AudioSegment
+from pydub.playback import play
+
+musica = AudioSegment.from_file("caminho_para_minha_musica.mp3", format="mp3")
+play(musica)
+```
+
+
 
 
 

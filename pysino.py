@@ -10,6 +10,13 @@ import pydub.playback as playback
 from pathlib import Path
 from datetime import datetime
 
+
+def is_mp3(i):
+    if i.is_file() and i.suffix == ".mp3":
+        return True
+    return False
+
+
 def dia_hoje():
 
     hr = datetime.now()
@@ -37,6 +44,7 @@ def comparar_data(data_str, data_obj):
     if h_str > h_obj:
         return 1
     return -1
+
 
 
 class Pysino:
@@ -128,13 +136,7 @@ class Pysino:
 
     def escolher_musica(self):
 
-        def is_mp3(i):
-            if i.is_file() and str(i).split(".")[-1] == "mp3":
-                return True
-            return False
-
         p = Path(self.pasta_padrao)
-        
         musicas = [i for i in p.iterdir() if is_mp3(i)]
         return random.choice(musicas)
 

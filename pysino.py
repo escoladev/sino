@@ -69,6 +69,7 @@ class Pysino:
         self.pasta_padrao = _config['configuracao']['pastaPadrao'] 
         self.tempo_musica = int(_config['configuracao']['tempoMusica'])
         self.dia = _dia
+        self.comecar_em = int(_config['configuracao']['comecarEm'])
 
 
     def tocar(self):
@@ -80,8 +81,10 @@ class Pysino:
 
         musica = pydub.AudioSegment.from_file(arquivo_musica, format="mp3")
         tempo = int(self.tempo_musica) * 1000
+        # a musica pode ser tocada de qualquer segundo
+        comecar_em = int(self.comecar_em) * 1000
         # aplica corta na música e faz fade in/out 
-        musica = musica[:tempo]
+        musica = musica[comecar_em:tempo+comecar_em]
         musica = musica.fade_in(5000)
         musica = musica.fade_out(5000)
         print("Música escolhida: ", arquivo_musica)

@@ -18,7 +18,17 @@ alguns parâmetros, como:
 [configuracao]
 sinoPadrao = caminho até o arquivo .mp3 do sino
 pastaPadrao = caminho até a pasta onde tem as músicas
+tempoMusica = tempo em segundos para ser tocada a musica  
+comecarEm = tempo em segundos
+
+exemplo:
+
+[configuracao]
+sinoPadrao = /home/usuario/pysino/musica_padrao.mp3
+pastaPadrao = /home/usuario/Músicas/
 tempoMusica = 50  
+comecarEm = 30
+
 ```
 
 e
@@ -27,6 +37,12 @@ e
 [segunda]
 horarioMusica = os horários no formato(hora:minuto) que tocará música, separados por vígula
 horarioSinoPadrao = os horários formato(hora:minuto) que tocará sino, separados por vírgula
+
+exemplo:
+
+[quarta]
+horarioMusica = 07:15, 08:05, 08:55, 09:10, 10:00, 10:50, 11:40, 13:00, 13:50, 14:40,14:55, 15:45, 16:35
+horarioSinoPadrao = 07:15, 09:10, 13:00, 14:55
 ```
 
 ## dependência

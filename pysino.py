@@ -96,19 +96,21 @@ class Pysino:
         print("""
         -----------------------------------------------------
                             Pysino 
-
+                            
                              {} 
         ----------------Configurações------------------------
         Hoje é: {}
         Tempo de execução da Música: {} seg(s).
         Diretório das Músicas: {}
         Sino Padrão: {}
+        Música começa do segundo: {}
         -----------------------------------------------------
         """.format(hora_agora.year,
         self.dia,
         self.tempo_musica,
         self.pasta_padrao,
-        self.sino_padrao))
+        self.sino_padrao,
+        self.comecar_em))
 
         while self.hr_musica:
             hora_agora = datetime.now()

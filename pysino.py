@@ -64,7 +64,7 @@ class Pysino:
 
         self.hr_musica = [i.replace(" ", "") for i in _hr_musica]
         self.hr_sino = [i.replace(" ", "") for i in _hr_sino]
-        self.sino_ou_musica = None
+        self.tipo = None # 'sino' ou 'musica' 
         self.sino_padrao = _config['configuracao']['sinoPadrao'] 
         self.pasta_padrao = _config['configuracao']['pastaPadrao'] 
         self.tempo_musica = int(_config['configuracao']['tempoMusica'])
@@ -74,15 +74,25 @@ class Pysino:
 
     def tocar(self):
         arquivo_musica = ''
-        if self.sino_ou_musica == 'sino':
+        tempo = int(self.tempo_musica) * 1000
+
+        if self.tipo == 'sino':
             arquivo_musica = self.sino_padrao
+            # a musica pode ser tocada de qualquer segundo
+            comecar_em = 0
+        # [especial]
+        elif self.tipo == 'baitaca':
+            arquivo_musica = "/".join(self.sino_padrao.split("/")[:-1]) + "/grota.mp3"
+            # a musica pode ser tocada de qualquer segundo
+            comecar_em = 0
+            tempo = 77 * 1000
         else:
             arquivo_musica = self.escolher_musica()
+            # a musica pode ser tocada de qualquer segundo
+            comecar_em = int(self.comecar_em) * 1000
 
         musica = pydub.AudioSegment.from_file(arquivo_musica, format="mp3")
-        tempo = int(self.tempo_musica) * 1000
-        # a musica pode ser tocada de qualquer segundo
-        comecar_em = int(self.comecar_em) * 1000
+        
         # aplica corta na música e faz fade in/out 
         musica = musica[comecar_em:tempo+comecar_em]
         musica = musica.fade_in(5000)
@@ -123,9 +133,9 @@ class Pysino:
 
             comp = comparar_data(self.hr_musica[0], hora_agora)
             if self.hr_musica[0] in self.hr_sino:
-                self.sino_ou_musica = 'sino'
+                self.tipo = 'sino'
             else:
-                self.sino_ou_musica = 'musica'
+                self.tipo = 'musica'
 
             if comp == 0:
                 self.tocar()
@@ -146,10 +156,66 @@ class Pysino:
         return random.choice(musicas)
 
 
-if __name__ == '__main__':
+# homenagem especial ao trovador do Rio Grande do Sul da legitima
+# música e tradição gaúcha: Baitaca (Antônio César Pereira Jacques)
+def baitaca():
+    print(
+        """
+#    ____          _____                _             _          ____           _        
+#   |  _ \  ___   |  ___|   _ _ __   __| | ___     __| | __ _   / ___|_ __ ___ | |_ __ _ 
+#   | | | |/ _ \  | |_ | | | | '_ \ / _` |/ _ \   / _` |/ _` | | |  _| '__/ _ \| __/ _` |
+#   | |_| | (_) | |  _|| |_| | | | | (_| | (_) | | (_| | (_| | | |_| | | | (_) | || (_| |
+#   |____/ \___/  |_|   \__,_|_| |_|\__,_|\___/   \__,_|\__,_|  \____|_|  \___/ \__\__,_|
+#    ____        _ _                                                                     
+#   | __ )  __ _(_) |_ __ _  ___ __ _                                                    
+#   |  _ \ / _` | | __/ _` |/ __/ _` |                                                   
+#   | |_) | (_| | | || (_| | (_| (_| |                                                   
+#   |____/ \__,_|_|\__\__,_|\___\__,_|                                                   
+#   
+            (Mateando ao pé do borraio
+            Conto causos e anedota
+            E o fogo véio campeiro
+            Me aquenta o bico da bota
+            E pra cantar o Brasil inteiro
+            Venho do fundo da grota) 
 
+    Fui criado na campanha
+    Em rancho de barro e capim
+    Por isso é que eu canto assim
+    Pra relembrar meu passado
+    Eu me criei arremedado
+    Dormindo pelos galpão
+    Perto de um fogo de chão
+    Com os cabelo enfumaçado
+
+    Quando rompe a estrela D'alva
+    Aquento a chaleira
+    Já quase no clariá o dia
+    Meu pingo de arreio
+    Relincha na estrebaria
+    Enquanto uma saracura
+    Vai cantando empoleirada
+                                        
+        """)
+
+
+if __name__ == '__main__':
+    # -> 'sino' apenas soa o sino da escola
+    # -> 'musica' apenas soa uma música da pasta de músicas (aleatoriamente)
+    # -> 'padrao' ou sem parametro executa o programa 
+    #    para soar os sinos de acordo com a agenda (horarios.ini)
+    # -> 'baitaca' toca apenas trecho de "Do Fundo da Grota" do Baitaca. 
+    #    (uso de acordo com a lei na L9610, no Cap. IV, Art. 46)
+    param = sys.argv[1] if len(sys.argv) > 1 else 'padrao'
     pysino = Pysino()
-    pysino.executar()
+        
+    if param in ('sino', 'musica', 'baitaca'):
+        pysino.tipo = param
+        if param == 'baitaca':
+            baitaca()
+        pysino.tocar()
+    else:
+        pysino.executar()
     print("""
         -----------------------------------------------------
                          Concluído!

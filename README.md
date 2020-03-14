@@ -45,6 +45,17 @@ horarioMusica = 07:15, 08:05, 08:55, 09:10, 10:00, 10:50, 11:40, 13:00, 13:50, 1
 horarioSinoPadrao = 07:15, 09:10, 13:00, 14:55
 ```
 
+Para tocar apenas uma música qualquer aleatoriamente, execute o programa com o seguinte parametro:
+
+```
+python3 pysino.py musica 
+```
+
+Para tocar apenas o sino, execute o programa com o seguinte parametro:
+```
+python3 pysino.py sino 
+```
+
 ## dependência
 
 Esse programa requer a biblioteca: [pydub](https://github.com/jiaaro/pydub) instalada e as libs para se usar o playback (veja na página do github da lib). 
